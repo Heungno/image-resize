@@ -10,10 +10,18 @@
     "build": "pkg ."
   },
   "pkg": {
-    "scripts": "main.js",
+    "scripts": [
+      "main.js",
+      "config/*.js"
+    ],
     "assets": [
-      "./node_modules"
-    ]
+      "node_modules/**/*"
+    ],
+    "targets": [
+      "node16-win-x64",
+      "node16-linux-x64"
+    ],
+    "outputPath": "bin"
   },
   "devDependencies": {
     "pkg": "^5.3.1"
@@ -21,8 +29,10 @@
   "dependencies": {
     "dotenv": "^10.0.0",
     "file-type": "^16.5.3",
+    "mssql": "^7.2.1",
     "node-cron": "^3.0.0",
     "sharp": "^0.29.0",
+    "tedious": "^11.8.0",
     "winston": "^3.3.3",
     "winston-daily-rotate-file": "^4.5.5"
   }

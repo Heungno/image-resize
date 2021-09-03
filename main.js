@@ -17,6 +17,23 @@ const _extRegex = new RegExp(process.env.EXT_REGEX);
 const _logoGravity = process.env.LOGO_GRAVITY || "center";
 const _crontab = process.env.CRONTAB;
 
+// DATABASE에서 목록 가져오기
+async function selectList(){
+  try {
+    // make sure that any items are correctly URL encoded in the connection string
+    await sql.connect(sqlConfig)
+    const result = await sql.query`
+      SELECT INSTT_IDNO, IMG_IDTY, FILE_NM, ISUNLL(FILE_TYPE,'') AS FILE_TYPE
+        FROM TE_SEED_IMAGE_TRAN
+       WHERE PIC_STATUS = 'R'
+    `;
+    console.dir(result)
+    return result
+   } catch (err) {
+    logger.error(err)
+   }
+}
+
 // 디렉터리 안 파일 목록
 async function getDir(path) {
   return fs.readdirSync(path, (error, list) => {
@@ -99,11 +116,6 @@ async function main() {
   let startTime = new Date().getTime();
   logger.info(`🚀 이미지 변환시작 `, _inputPath, _outputPath, _logoPath);
 
-  if (!fs.existsSync(_logoPath)) {
-    logger.warn(`🚨 로고파일 없음 ${_logoPath} 없음`);
-    _logoPath = "";
-  }
-
   const fileList = await getProcList(_inputPath, _outputPath);
   logger.info(`📑 처리할목록 총 ${fileList.length} 건`);
 
@@ -126,6 +138,7 @@ async function main() {
         //이미지 크기변환
         image = await imageResize(image, _outputPath, filename);
 
+        console.log(_logoPath? "ok": "no")
         //로고 삽입
         if (_logoPath) image = await addLogo(image, _outputPath, filename);
       } catch (error) {
@@ -137,8 +150,7 @@ async function main() {
   logger.info(`🎉 이미지 변환종료 ⏱소요시간: ${getTimeout(startTime)}`);
 }
 
-// (async () => {
-//   cron.schedule(_crontab, main);
-// })();
-
-cron.schedule(_crontab, main);
+(async () => {
+  cron.schedule(_crontab, main);
+  selectList();
+})();
